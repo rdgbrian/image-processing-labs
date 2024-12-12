@@ -3,3 +3,5 @@ matplotlib
 pillow
 opencv-python
 ipykernel
+networkx
+plotly 

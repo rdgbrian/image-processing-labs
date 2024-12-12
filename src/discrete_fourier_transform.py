@@ -7,12 +7,23 @@ def rgb2gray(rgb): # Y' = 0.2989 R + 0.5870 G + 0.1140 B
     """
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
-def discrete_fourier_transform(img,centered=False):
+def mult_complex(c1, c2):
+    real_part = c1[0] * c2[0] - c1[1] * c2[1]
+    imaginary_part = c1[0] * c2[1] + c1[1] * c2[0]
+    return np.array([real_part, imaginary_part])
+
+
+def discrete_fourier_transform(img,centered=False, inverse = False):
 
     if centered:
         shift = -1.
     else:
         shift = 1.
+
+    if not inverse:
+        sign = -1
+    else:
+        sign = 1
 
     input_shape = img.shape
     
@@ -26,8 +37,8 @@ def discrete_fourier_transform(img,centered=False):
             for y in range(M): # y
                 for x in range(N): # x 
                             # (-1)**(i+j)
-                        real[v,u] += img[y,x] * (shift)**(y+x) * np.cos(-2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
-                        imaginary[v,u] += img[y,x] * (shift)**(y+x) *np.sin(-2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
+                        real[v,u] += img[y,x] * (shift)**(y+x) * np.cos(sign*2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
+                        imaginary[v,u] += img[y,x] * (shift)**(y+x) *np.sin(sign *2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
     
     F = np.array([real,imaginary])
     return F
