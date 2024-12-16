@@ -1,109 +1,44 @@
 import numpy as np # math li
 import matplotlib.pyplot as plt
-def rgb2gray(rgb): # Y' = 0.2989 R + 0.5870 G + 0.1140 B 
+def dft2d(matrix, inverse=False, centered = False):
     """
-    Function to turn an RGB image to gray scale
-    rdg : an RGB image represented as a numpy array
+    Compute the 2D Discrete Fourier Transform or its inverse.
+    
+    :param matrix: Input 2D array.
+    :param inverse: If True, computes the inverse DFT. Default is False.
+    :return: Transformed 2D array (frequency or spatial domain).
     """
-    return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
+    M, N = matrix.shape  # Get the dimensions of the input matrix
+    dft_matrix = np.zeros((M, N), dtype=np.complex128)  # Initialize the output matrix
+    factor = 1 / (M * N) if inverse else 1  # Scaling factor for the inverse transform
+    sign = 1 if inverse else -1  # Sign of the exponent
 
-def mult_complex(c1, c2):
-    real_part = c1[0] * c2[0] - c1[1] * c2[1]
-    imaginary_part = c1[0] * c2[1] + c1[1] * c2[0]
-    return np.array([real_part, imaginary_part])
+    # sign_inv = 1 if centered else -1  # Sign of the exponent
 
 
-def discrete_fourier_transform(img,centered=False, inverse = False):
-
-    if centered:
-        shift = -1.
-    else:
-        shift = 1.
-
-    if not inverse:
-        sign = -1
-    else:
-        sign = 1
-
-    input_shape = img.shape
+    # Compute the 2D DFT or inverse DFT
+    for u in range(M):
+        for v in range(N):
+            sum_value = 0
+            for x in range(M):
+                for y in range(N):
+                    angle = sign * 2j * np.pi * ((u * x / M) + (v * y / N))
+                    sum_value += matrix[x, y] * np.exp(angle)
+            dft_matrix[u, v] = factor * sum_value
     
-    M = input_shape[1] # in x direction
-    N = input_shape[0] # in y direction
+    return dft_matrix
 
-    real = np.zeros(input_shape)
-    imaginary = np.zeros(input_shape)
-    for v in range(M):
-        for u in range(N):
-            for y in range(M): # y
-                for x in range(N): # x 
-                            # (-1)**(i+j)
-                        real[v,u] += img[y,x] * (shift)**(y+x) * np.cos(sign*2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
-                        imaginary[v,u] += img[y,x] * (shift)**(y+x) *np.sin(sign *2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
-    
-    F = np.array([real,imaginary])
-    return F
+# # Example usage
+# input_matrix = np.array([[1, 2], [3, 4]], dtype=np.float64)  # A small 2x2 input
+# dft_result = dft2d(input_matrix)  # Forward DFT
+# idft_result = dft2d(dft_result, inverse=True)  # Inverse DFT
 
-def inverse_discrete_fourier_transform(img,centered=False):
-
-    if centered:
-        shift = -1.
-    else:
-        shift = 1.
-
-    input_shape = img.shape
-    
-    M = input_shape[1] # in x direction
-    N = input_shape[0] # in y direction
-
-    real = np.zeros(input_shape)
-    imaginary = np.zeros(input_shape)
-    for v in range(M):
-        for u in range(N):
-            for y in range(M): # y
-                for x in range(N): # x 
-                            # (-1)**(i+j)
-                        real[u,v] += img[y,x] * (shift)**(y+x) * np.cos(2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
-                        imaginary[u,v] += img[y,x] * (shift)**(y+x) * np.sin(2*np.pi*(u*x/input_shape[1]+v*y/input_shape[0]))
-    real = real / (M*N)
-    imaginary = imaginary / (M*N)
-    
-    return real, imaginary
-
-
-# def discrete_fourier_transform(img,centered=False):
-
-#     if centered:
-#         shift = -1.
-#     else:
-#         shift = 1.
-
-#     input_shape = img.shape
-#     real = np.zeros(input_shape)
-#     imaginary = np.zeros(input_shape)
-#     for v in range(input_shape[0]):
-#         for u in range(input_shape[0]):
-#             for i in range(input_shape[0]): # y
-#                 for j in range(input_shape[1]): # x 
-#                             # (-1)**(i+j)
-#                         real[u,v] += img[i,j] * (shift)**(i+j) * -np.cos(2*np.pi*(u*j/input_shape[1]+v*i/input_shape[0]))
-#                         imaginary[u,v] += img[i,j] * (shift)**(i+j) *-np.sin(2*np.pi*(u*j/input_shape[1]+v*i/input_shape[0]))
-#     return real, imaginary
-
-
-def power_spectrum(real, imaginary):
-    return real**2 + imaginary**2
-def fourier_spectrum(real, imaginary):
-    return np.sqrt(real**2 + imaginary**2)
-
-def create_white_square(n, square_size):
-    # Create an n x n black background (all zeros)
-    image = np.zeros((n, n), dtype=np.uint8)
-    # Calculate the starting and ending points for the white square
-    start = (n - square_size) // 2
-    end = start + square_size
-    # Create a white square (all ones) in the center of the black image
-    image[start:end, start:end] = 255
-    return image
+# print("Input Matrix:")
+# print(input_matrix)
+# print("\n2D DFT Result:")
+# print(dft_result)
+# print("\nReconstructed Matrix (Inverse DFT):")
+# print(idft_result.real)  # Take the real part to avoid numerical noise
 
 
 

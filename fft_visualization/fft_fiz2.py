@@ -1,6 +1,6 @@
 import plotly.graph_objs as go
 import networkx as nx
-from src.fast_fourier_transform import fast_fourier_transform
+from src.fast_fourier_transform import fft2d
 from src.discrete_fourier_transform import create_white_square
 import numpy as np
 
@@ -9,7 +9,7 @@ n = 8
 square_size = 4
 image = create_white_square(n, square_size)
 
-temp_fft, info = fast_fourier_transform(image,save_info=True)
+temp_fft, info = fft2d(image,save_info=True)
 
 
 
