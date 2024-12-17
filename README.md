@@ -1,6 +1,6 @@
 # Image Processing Labs
 
-Set of solutions and implementation of image processing algorithms and them being applyied to images.
+Set of solutions and implementation of image processing algorithms and them being applied to images.
 
 
 ---
