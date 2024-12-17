@@ -50,7 +50,7 @@ source venv/bin/activate    # On Windows: venv\Scripts\activate
 #### Using `conda`:
 
 ```bash
-conda create -n myenv python=3.8
+conda create -n myenv python=3.10
 conda activate myenv
 ```
 
