@@ -3,7 +3,7 @@ from src.image_transforms import dct2d
 # %%
 import numpy as np
 from PIL import Image
-from src.jpeg_tables import DC_CODE, AC_CODE
+from src.jpeg_tables import DC_CODE, AC_CODE, category
 
 
 Y_quantization_matrix = np.array([
@@ -16,41 +16,6 @@ Y_quantization_matrix = np.array([
     [49, 64, 78, 87, 103, 121, 120, 101],
     [72, 92, 95, 98, 112, 100, 103, 99]
 ])
-
-def category(coeff):
-    """Returns the DC category based on the difference."""
-    if coeff == 0:
-        return 0
-    elif abs(coeff) <= 1:
-        return 1
-    elif abs(coeff) <= 3:
-        return 2
-    elif abs(coeff) <= 7:
-        return 3
-    elif abs(coeff) <= 15:
-        return 4
-    elif abs(coeff) <= 31:
-        return 5
-    elif abs(coeff) <= 63:
-        return 6
-    elif abs(coeff) <= 127:
-        return 7
-    elif abs(coeff) <= 255:
-        return 8
-    elif abs(coeff) <= 511:
-        return 9
-    elif abs(coeff) <= 1023:
-        return 10
-    elif abs(coeff) <= 2047:
-        return 11
-    elif abs(coeff) <= 4095:
-        return 12
-    elif abs(coeff) <= 8191:
-        return 13
-    elif abs(coeff) <= 16383:
-        return 14
-    else:
-        return 15
 
 
 def zigzag_scan(matrix):

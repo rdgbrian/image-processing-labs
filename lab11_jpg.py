@@ -62,13 +62,13 @@ def create_bar_graph(image_names, jpeg_codes):
 def main():
     jpeg_codes = []
 
-    for image_name in image_names:
-        print(f"Processing {image_name}...")
-        jpeg_code = calculate_jpeg_code(image_name)
-        jpeg_codes.append(jpeg_code)
+    # for image_name in image_names:
+    #     print(f"Processing {image_name}...")
+    #     jpeg_code = calculate_jpeg_code(image_name)
+    #     jpeg_codes.append(jpeg_code)
 
-    # Create bar graph for JPEG code lengths
-    create_bar_graph(image_names, jpeg_codes)
+    # # Create bar graph for JPEG code lengths
+    # create_bar_graph(image_names, jpeg_codes)
 
     # Run sanity check
     sanity_check()

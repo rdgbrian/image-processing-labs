@@ -12,10 +12,37 @@ from src.resize import crop_power2, reduce_image
 # Define directories
 image_dir = "images\\"
 image_names = ["crying-cat-meme.jpg", "nebula.jpg", "squirrel.jpg", "beach_sunset.jpg"]
+
+image_names = ["squirrel.jpg"]
+
 output_dir = "outputs\\lab5_transforms"  # Save all transform outputs here
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
+
+# Function to generate timing plots
+def plot_transform_times(sizes,dfts_time,ffts_time, image_name = ""):
+
+    plt.figure(figsize=(8, 6))
+
+    # Plot DFT times
+    plt.plot(sizes, dfts_time, marker='o', label='DFT Time', color='blue')
+
+    # Plot FFT times
+    plt.plot(sizes, ffts_time, marker='s', label='FFT Time', color='green')
+
+    # Add labels, title, and legend
+    plt.xlabel('Image Size')
+    plt.ylabel('Time (seconds)')
+    plt.title(f'Image {image_name}: DFT vs FFT Times')
+    plt.legend()
+
+    # Show grid
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    # Show the plot
+    plt.savefig(f"{output_dir}\\transform_times_image_{image_name}.jpg")
+    plt.close()
 
 # Function to compute and save FFT and DFT transforms for an image
 def save_transforms_for_image(image_name, min_size=16):
@@ -25,12 +52,17 @@ def save_transforms_for_image(image_name, min_size=16):
     cropped_image = np.array(cropped_image)
     cropped_image = rgb2gray(cropped_image)
 
-    cropped_image = reduce_image(cropped_image)
+    cropped_image = reduce_image(cropped_image,1)
     # Reduce the image size and compute transforms
     size = cropped_image.shape[0]
     print(size)
     n = 1  # Reduction factor (2^n)
 
+    all_times = []
+
+    sizes = []
+    dfts_time = []
+    ffts_time = []
     while size >= min_size:
         print(f"Processing image {image_name} at size {size}x{size}...")
 
@@ -41,23 +73,29 @@ def save_transforms_for_image(image_name, min_size=16):
         transform_dict = {}
         time_dict = {}
 
+        time_dict["size"] = reduced_image.shape[0]
+        sizes.append(reduced_image.shape[0])
+
+        
         # Compute FFT and time it
         start_time = time()
         fft_og, _ = fft2d(reduced_image, inverse=False)
         time_dict["fft"] = time() - start_time
         transform_dict["fft"] = center_fourier(fft_og)
 
+        ffts_time.append(time() - start_time)
+
         # Compute DFT and time it
         start_time = time()
         dft_og = dft2d(reduced_image, inverse=False)
         time_dict["dft"] = time() - start_time
         dft_og_center = center_fourier(dft_og)
-        
         transform_dict["dft"] = center_fourier(dft_og)
 
-        # # Save transforms
-        save_transforms(image_name + f"_{size}", transform_dict, output_dir)
+        dfts_time.append(time_dict["dft"])
 
+        
+        all_times.append(time_dict)
         # Plot and save Fourier spectrum
         for key, transform in transform_dict.items():
             spectrum = fourier_spectrum(transform.real, transform.imag)
@@ -70,30 +108,8 @@ def save_transforms_for_image(image_name, min_size=16):
         # Update size and reduction factor
         n += 1
         size = reduced_image.shape[0]
-
-# Function to generate timing plots
-def plot_transform_times(all_times):
-    for i, times in enumerate(all_times):
-        plt.figure(figsize=(8, 6))
-
-        # Plot DFT times
-        plt.plot(times["size"], times["dft"], marker='o', label='DFT Time', color='blue')
-
-        # Plot FFT times
-        plt.plot(times["size"], times["fft"], marker='s', label='FFT Time', color='green')
-
-        # Add labels, title, and legend
-        plt.xlabel('Image Size')
-        plt.ylabel('Time (seconds)')
-        plt.title(f'Image {i + 1}: DFT vs FFT Times')
-        plt.legend()
-
-        # Show grid
-        plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-
-        # Show the plot
-        plt.savefig(f"{output_dir}\\transform_times_image_{i + 1}.jpg")
-        plt.close()
+    
+    plot_transform_times(sizes,dfts_time,ffts_time,image_name)
 
 # Main function to process all images
 def main():
@@ -108,7 +124,7 @@ def main():
     np_real = f.real
     np_imag = f.imag
 
-    fft_og, _ = fft2d(test_image, centered=True)
+    fft_og, _ = fft2d(test_image, centered=False)
     og_real = fft_og.real
     og_imag = fft_og.imag
 
