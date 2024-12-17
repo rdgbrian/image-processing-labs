@@ -99,7 +99,7 @@ def create_white_square(n, square_size):
     image[start:end, start:end] = 255
     return image
 
-def save_transforms(image_name, transform_dict, output_dir, add_log = False):
+def save_transforms(image_name, transform_dict, output_dir, add_log = True):
     """
     Save each transform in the dictionary to the output directory.
 
@@ -123,3 +123,10 @@ def save_transforms(image_name, transform_dict, output_dir, add_log = False):
         output_path = os.path.join(output_dir, f"{os.path.splitext(image_name)[0]}_{name}.png")
         transformed_image.save(output_path)
         print(f"Saved {name} transform to {output_path}")
+
+def save_image(image,out_path):
+    
+    plt.axis('off')  # Turns off the axis lines and labels
+    plt.imshow(image,cmap="gray")
+    plt.savefig(out_path)     
+    plt.show()

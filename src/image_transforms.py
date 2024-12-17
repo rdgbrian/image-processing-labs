@@ -31,8 +31,8 @@ def dct2d(img, inverse=False):
                         transform[u, v] += (
                             tau(u, v, N, M)
                             * img[x, y]
-                            * np.cos((2 * y + 1) * u * np.pi / (2 * M))
-                            * np.cos((2 * x + 1) * v * np.pi / (2 * N))
+                            * np.cos((2 * x + 1) * u * np.pi / (2 * M))
+                            * np.cos((2 * y + 1) * v * np.pi / (2 * N))
                         )
     else:
         for x in range(N):
@@ -42,8 +42,8 @@ def dct2d(img, inverse=False):
                         transform[x, y] += (
                             tau(u, v, N, M)
                             * img[u, v]
-                            * np.cos((2 * y + 1) * u * np.pi / (2 * M))
-                            * np.cos((2 * x + 1) * v * np.pi / (2 * N))
+                            * np.cos((2 * x + 1) * u * np.pi / (2 * M))
+                            * np.cos((2 * y + 1) * v * np.pi / (2 * N))
                         )
 
     return transform

@@ -1,4 +1,3 @@
-# %%
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -7,102 +6,80 @@ from src.image_transforms import dct2d, haar_transform, hadamard_transform, wals
 from src.utils import create_white_square, rgb2gray, save_transforms
 from src.resize import crop_power2, reduce_image
 
-# %%
-# Example: 10x10 image with a 4x4 white square in the center
-n = 32
-square_size = 8
-image = create_white_square(n, square_size)
-
-# image = plt.imread("Lab1-Inverting_Image/crying-cat-meme.jpg")
-print(image.shape) # show the dimensions of the image
-plt.imshow(image)
-plt.show()
-
-# %%
-cropped_image = crop_power2("images\crying-cat-meme.jpg", save_path="output_image.jpg")
-# cropped_image = np.array(cropped_image)
-cropped_image = rgb2gray(cropped_image)
-
-
-cropped_image = reduce_image(cropped_image,4)
-plt.imshow(cropped_image,cmap="grey")
-plt.show()
-image = cropped_image
-
-# %%
-
-# Main script
+# Define directories
 image_dir = "images\\"
-image_names = ["crying-cat-meme.jpg"]
-output_dir = "outputs\\lab4"
+# image_names = ["crying-cat-meme.jpg", "nebula.jpg", "squirrel.jpg", "beach_sunset.jpg"]
+image_names = ["random.png"]
+
+output_dir = "outputs\\lab4_transforms"  # Save all transform outputs here
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-# Store all transforms in a list
-transforms_list = []
-
-for image_path in image_names:
-    path = os.path.join(image_dir, image_path)
-    cropped_image = crop_power2(path)  # Pass the actual file path
+# Function to apply and save transforms for an image
+def save_image_transforms(image_name,add_log=True):
+    # Load and preprocess the image
+    image_path = os.path.join(image_dir, image_name)
+    cropped_image = crop_power2(image_path, save_path=None)  # Crop to power of 2
+    cropped_image = np.array(cropped_image)
     cropped_image = rgb2gray(cropped_image)
-    cropped_image = reduce_image(cropped_image,4)
+
+    # Reduce the image size
+    cropped_image = reduce_image(cropped_image, 1)
     size = cropped_image.shape[0]
 
-    # Perform the transformations and store them in a dictionary
-    transform_dict = {
+    # Perform the transformations
+    transforms = {
         "dct": dct2d(cropped_image),
         "walsh": walsh_transform(cropped_image),
-        "hadamard": hadamard_transform(cropped_image),
+        # "hadamard": hadamard_transform(cropped_image),
         "haar": haar_transform(cropped_image)
     }
 
-    # Add the transform dictionary to the list
-    transforms_list.append((image_path, transform_dict))
+    # Save each transform as an image
+    for transform_name, transform_data in transforms.items():
 
-# Save all transforms in the list
-for image_name, transform_dict in transforms_list:
-    save_transforms(image_name + "_size", transform_dict, output_dir,add_log=True)
+        if(add_log):
+            transform_data = (255 / np.log10(255)) * np.log10(1 + 255/(np.max(transform_data)) * np.abs(transform_data))  # log1p(x) = log(1 + x), safe for 0 values
 
+        plt.imshow(transform_data, cmap='gray')
+        plt.title(f"{image_name} - {transform_name.upper()} Transform")
+        plt.axis('off')
+        plt.savefig(f"{output_dir}\\{image_name.split('.')[0]}_{transform_name}_{size}x{size}.jpg", bbox_inches='tight')
+        plt.close()
 
-
-     
-# %%
-
+# Function to perform a sanity check on transforms
 def sanity_check(image):
-    dct_og = dct2d(image)
-    plt.imshow(dct_og)
-    plt.show()
-    image_rec = dct2d(dct_og,inverse=True)
-    plt.imshow(image_rec,cmap="grey")
-    plt.show()
-    are_equal = np.allclose(image_rec,image, rtol=1e-6, atol=1e-9)
-    print("Are the arrays equal to the given precision?", are_equal)
-    
-    walsh_og = walsh_transform(image)
-    plt.imshow(walsh_og)
-    plt.show()
-    image_rec = walsh_transform(walsh_og)
-    plt.imshow(image_rec,cmap="grey")
-    plt.show()
-    are_equal = np.allclose(image_rec,image, rtol=1e-6, atol=1e-9)
-    print("Are the arrays equal to the given precision?", are_equal)
+    for transform, func in zip([
+        "DCT", "Walsh", "Hadamard", "Haar"],
+        [dct2d, walsh_transform, hadamard_transform, haar_transform]):
 
-    hadamard_og = hadamard_transform(image)
-    plt.imshow(walsh_og)
-    plt.show()
-    image_rec = hadamard_transform(hadamard_og)
-    plt.imshow(image_rec,cmap="grey")
-    plt.show()
-    are_equal = np.allclose(image_rec,image, rtol=1e-6, atol=1e-9)
-    print("Are the arrays equal to the given precision?", are_equal)
-    
-    haar_og = haar_transform(image)
-    plt.imshow(haar_og)
-    plt.show()
-    image_rec = haar_transform(haar_og,inverse=True)
-    plt.imshow(image_rec,cmap="grey")
-    plt.show()
-    are_equal = np.allclose(image_rec,image, rtol=1e-6, atol=1e-9)
-    print("Are the arrays equal to the given precision?", are_equal)
-# %%
+        print(f"Performing sanity check for {transform} transform...")
+        transform_og = func(image)
+        plt.imshow(transform_og, cmap='gray')
+        plt.title(f"{transform} Transform")
+        plt.show()
+
+        if transform == "DCT" or transform == "Haar":
+            image_rec = func(transform_og, inverse=True)
+        else:
+            image_rec = func(transform_og)
+
+        plt.imshow(image_rec, cmap='gray')
+        plt.title(f"Reconstructed Image ({transform})")
+        plt.show()
+
+        are_equal = np.allclose(image_rec, image, rtol=1e-6, atol=1e-9)
+        print(f"{transform} Transform: Are original and reconstructed images equal? {are_equal}")
+
+# Main function to process all images
+def main():
+    for image_name in image_names:
+        save_image_transforms(image_name,True)
+        
+    # Example sanity check on a created white square
+    test_image = create_white_square(32, 8)
+    sanity_check(test_image)
+
+if __name__ == "__main__":
+    main()

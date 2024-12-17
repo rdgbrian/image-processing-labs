@@ -1,0 +1,10 @@
+Image Name	Code Length
+crying-cat-meme.jpg	72399
+nebula.jpg	79051
+squirrel.jpg	123490
+beach_sunset.jpg	599356
+
+Length Differences:
+6652
+44439
+475866

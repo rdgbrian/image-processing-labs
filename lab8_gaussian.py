@@ -1,43 +1,55 @@
-# %%
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-from src.discrete_fourier_transform import dft2d
-from src.fast_fourier_transform import fft2d
 from src.filters import lapacian_gausian_fourier, apply_filter_in_frequency_domain
+from src.utils import rgb2gray
+from src.resize import crop_power2
 
-from src.utils import fourier_spectrum, create_white_square, rgb2gray, center_fourier, save_transforms
-from src.resize import crop_power2, reduce_image
-from time import time
-from PIL import Image
-
-# %%
+# Define directories
 image_dir = "images\\"
 image_names = ["crying-cat-meme.jpg", "juliana.jpg"]
-output_dir = "outputs\\lab6"
+output_dir = "outputs\\lab8_laplacian_gaussian"  # Save all outputs here
 
-image_path = image_dir + image_names[1]
-cropped_image = crop_power2(image_path)
-cropped_image = rgb2gray(cropped_image)
-# cropped_image = reduce_image(cropped_image, 4)
+# Ensure the output directory exists
+os.makedirs(output_dir, exist_ok=True)
 
-# Display the preprocessed image
-plt.imshow(cropped_image, cmap="gray")
-plt.title(f"Original Image: {image_names[0]}")
-plt.show()
+# Function to apply Laplacian of Gaussian for different thresholds and sigmas
+def apply_laplacian_of_gaussian(image_name, thresholds, sigmas):
+    # Load and preprocess the image
+    image_path = os.path.join(image_dir, image_name)
+    cropped_image = crop_power2(image_path, save_path=None)
+    cropped_image = np.array(cropped_image)
+    cropped_image = rgb2gray(cropped_image)
 
-# %%
+    for sigma in sigmas:
+        # Generate the Laplacian of Gaussian filter
+        filter_matrix = lapacian_gausian_fourier(cropped_image.shape, sigma)
 
-filter_matrix = lapacian_gausian_fourier(cropped_image.shape,0.01)
-# Apply filter in the frequency domain
-filtered_image = apply_filter_in_frequency_domain(cropped_image,filter_matrix)
+        # Apply filter in the frequency domain
+        filtered_image = apply_filter_in_frequency_domain(cropped_image, filter_matrix)
 
-filtered_image = (filtered_image - filtered_image.min())/(filtered_image.max() - filtered_image.min())
+        # Normalize the filtered image
+        filtered_image = (filtered_image - filtered_image.min()) / (filtered_image.max() - filtered_image.min())
 
-# %%
-edges = filtered_image.real > 0.55
-# Display the filtered image
-plt.imshow(edges, cmap="gray")
-plt.title(f"laplacian of gaussian: {image_names[1]}")
-plt.show()
-# %%
+        for threshold in thresholds:
+            # Apply threshold to detect edges
+            edges = filtered_image.real > threshold
+
+            # Save the resulting edge-detected image
+            plt.imshow(edges, cmap="gray")
+            plt.title(f"LoG: Sigma={sigma}, Threshold={threshold}")
+            plt.axis('off')
+            plt.savefig(f"{output_dir}\\{image_name.split('.')[0]}_LoG_sigma{sigma}_threshold{threshold}.jpg", bbox_inches='tight')
+            plt.close()
+
+# Main function to process all images
+def main():
+    thresholds = [0.2, 0.4, 0.6, 0.8]  # Four threshold options
+    sigmas = [0.01, 0.05, 0.1, 0.2]  # Four sigma options
+
+    for image_name in image_names:
+        apply_laplacian_of_gaussian(image_name, thresholds, sigmas)
+
+if __name__ == "__main__":
+    main()

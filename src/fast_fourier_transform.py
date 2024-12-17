@@ -148,17 +148,13 @@ def fft2d(image,partition_str = "",inverse = False, save_info = False, centered 
     F = np.zeros((M,N),dtype=np.complex128)
     for v in range(N//2):
         for u in range(M//2):
-            # F[u,v]            = Fee[u,v] + mult_complex(Feo[u,v],weight(v,N)) + mult_complex(Foe[u,v],weight(u,N)) + mult_complex(Foo[u,v],weight(u+v,N)) # + +++
-            # F[v,u+N//2]       = Fee[u,v] + mult_complex(Feo[u,v],weight(v,N)) + mult_complex(Foe[u,v],weight(u+N//2,N)) + mult_complex(Foo[u,v],weight((u+N//2)+v,N)) # + +--
-            # F[v+N//2,u]       = Fee[u,v] + mult_complex(Feo[u,v],weight(v+N//2,N)) + mult_complex(Foe[u,v],weight(u,N)) + mult_complex(Foo[u,v],weight(u+(v+N//2),N)) # + -+-
-            # F[v+N//2,u+N//2]  = Fee[u,v] + mult_complex(Feo[u,v],weight(v+N//2,N)) + mult_complex(Foe[u,v],weight(u+N//2,N)) + mult_complex(Foo[u,v],weight((u+N//2)+(v+N//2),N)) # + --+
 
-            F[u,v]            = Fee[u,v] + (Feo[u,v]*weight(v,N,inverse)) + (Foe[u,v]*weight(u,N,inverse)) + (Foo[u,v]*weight(u+v,N,inverse)) # + +++
+            F[u,v]            = Fee[u,v] + (Feo[u,v]*weight(v,N,inverse)) + (Foe[u,v]*weight(u,N,inverse)) + (Foo[u,v]*weight(u+v,N,inverse)) # ++++
             F[u+N//2,v]       = Fee[u,v] + (Feo[u,v]*weight(v,N,inverse)) + (Foe[u,v]*weight(u+N//2,N,inverse)) + (Foo[u,v]*weight((u+N//2)+v,N,inverse)) # + +--
             F[u,v+N//2]       = Fee[u,v] + (Feo[u,v]*weight(v+N//2,N,inverse)) + (Foe[u,v]*weight(u,N,inverse)) + (Foo[u,v]*weight(u+(v+N//2),N,inverse)) # + -+-
             F[u+N//2,v+N//2]  = Fee[u,v] + (Feo[u,v]*weight(v+N//2,N,inverse)) + (Foe[u,v]*weight(u+N//2,N,inverse)) + (Foo[u,v]*weight((u+N//2)+(v+N//2),N,inverse)) # + --+
 
-            if save_info:
+            if save_info: # for future visulization
                 dependents = [comb_save_info[partition_str+"ee"][u][v], 
                               comb_save_info[partition_str+"eo"][u][v],
                               comb_save_info[partition_str+"oe"][u][v],
