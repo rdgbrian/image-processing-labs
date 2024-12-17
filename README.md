@@ -16,7 +16,7 @@ Set of solutions and implementation of image processing algorithms and them bein
 
 Make sure you have the following installed:
 
-- Python (>= 3.8)
+- Python (>= 3.10)
 - `pip` (Python package manager)
 - (Optional) `venv` or `conda` for virtual environment management
 
