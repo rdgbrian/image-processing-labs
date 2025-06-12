@@ -6,7 +6,7 @@ from src.discrete_fourier_transform import dft2d
 from src.utils import mult_complex
 
 
-def interp_partition(x,part):
+def interp_partition(x,part): # x here is either 0 or 1
     for char in reversed(part):
         if char == "e":
             x = 2*x
